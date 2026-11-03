@@ -1,1 +1,3 @@
-['- Membangun CSV Insight dengan 0 temuan pada QC 3 lapis.', '- Menjalankan QC kode, pengguna, dan visual dalam 101,83 detik.', '- Menyusun app.js 11792 B untuk parsing CSV tanpa server.']
+- Membangun CSV Insight dengan 3 lapis QC lulus dalam 43,0 detik.
+- Menutup QC dengan 0 temuan pada berkas app.js berukuran 10030 B.
+- Memproses CSV sepenuhnya di browser tanpa unggah ke server.

@@ -1,36 +1,43 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CSV Insight</title>
-  <link rel="stylesheet" href="style.css">
-  <script src="app.js" defer></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CSV Insight</title>
+<link rel="stylesheet" href="style.css">
+<script src="app.js" defer></script>
 </head>
 <body>
-  <main>
-    <h1>CSV Insight</h1>
-    <p class="subtitle">Unggah file CSV untuk melihat ringkasan statistik dan grafik batang. Semua diproses di browser.</p>
-    <div class="controls">
-      <input type="file" id="fileInput" accept=".csv" hidden>
-      <button type="button" id="uploadBtn" class="btn-primary">Pilih File CSV</button>
-      <button type="button" id="resetBtn" class="btn-secondary">Reset</button>
-    </div>
-    <div id="status" class="status" role="status" aria-live="polite"></div>
-    <section id="summarySection" hidden>
-      <h2>Ringkasan Statistik</h2>
-      <div id="summaryTableContainer" class="table-wrapper"></div>
-    </section>
-    <section id="chartSection" hidden>
-      <h2>Grafik Batang</h2>
-      <div class="chart-controls">
-        <label for="columnSelect">Pilih kolom:</label>
-        <select id="columnSelect"></select>
-      </div>
-      <div class="canvas-wrapper">
-        <canvas id="barChart" width="800" height="400"></canvas>
-      </div>
-    </section>
-  </main>
+<main>
+<h1>CSV Insight</h1>
+<p class="sub">Unggah file CSV Anda. Semua data diproses di browser, tidak ada unggahan ke server.</p>
+<div class="controls">
+<label class="file-label" for="fileInput">Pilih file CSV</label>
+<input type="file" id="fileInput" accept=".csv,text/csv" class="visually-hidden">
+<button type="button" id="btnSample">Muat contoh</button>
+<button type="button" id="btnClear">Hapus data</button>
+</div>
+<p id="status" class="status" role="status" aria-live="polite">Belum ada file dimuat.</p>
+<section id="summarySection" class="section" hidden>
+<h2>Ringkasan Kolom</h2>
+<div class="table-wrap">
+<table id="summaryTable">
+<thead><tr><th>Kolom</th><th>Tipe</th><th>Jumlah</th><th>Unik</th><th>Kosong</th><th>Min</th><th>Maks</th><th>Rata-rata</th></tr></thead>
+<tbody></tbody>
+</table>
+</div>
+</section>
+<section id="chartSection" class="section" hidden>
+<h2>Grafik Batang</h2>
+<div class="chart-controls">
+<label for="columnSelect">Pilih kolom untuk grafik:</label>
+<select id="columnSelect"></select>
+</div>
+<div class="canvas-wrap">
+<canvas id="chartCanvas" width="800" height="400" role="img" aria-label="Grafik batang nilai kolom terpilih"></canvas>
+</div>
+<p id="chartNote" class="status"></p>
+</section>
+</main>
 </body>
 </html>

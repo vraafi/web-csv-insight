@@ -31,8 +31,8 @@
     "lain": 2
    },
    "jumlah_diperiksa": 3,
-   "detik": 0.23,
-   "diperiksa": "2026-11-03T13:54:21+07:00"
+   "detik": 0.85,
+   "diperiksa": "2026-11-03T14:00:31+07:00"
   },
   "visual": {
    "lapis": "visual",
@@ -43,17 +43,17 @@
    "bounce_ke": null,
    "temuan": [],
    "catatan": [],
-   "url": "http://127.0.0.1:58436/index.html",
+   "url": "http://127.0.0.1:58918/index.html",
    "saran_mutu": [],
-   "screenshot": "C:\\Users\\user\\otonom-penuh\\state\\os\\qc_hardcore\\visual\\visual-1793688863.png",
+   "screenshot": "C:\\Users\\user\\otonom-penuh\\state\\os\\qc_hardcore\\visual\\visual-1793689233.png",
    "dom": {
     "inti": [
      {
       "kunci": "el0",
-      "label": "Pilih File CSV",
-      "x": 220,
-      "y": 115,
-      "w": 135,
+      "label": "Muat contoh",
+      "x": 333,
+      "y": 133,
+      "w": 138,
       "h": 49,
       "terlihat": true,
       "di_viewport": true,
@@ -64,10 +64,10 @@
      },
      {
       "kunci": "el1",
-      "label": "Reset",
-      "x": 367,
-      "y": 115,
-      "w": 82,
+      "label": "Hapus data",
+      "x": 483,
+      "y": 133,
+      "w": 127,
       "h": 49,
       "terlihat": true,
       "di_viewport": true,
@@ -78,9 +78,9 @@
      }
     ],
     "interaktif": 4,
-    "teks_diukur": 5,
+    "teks_diukur": 15,
     "kontras_min": 6.7,
-    "font_min": 16.0,
+    "font_min": 14.72,
     "lebar": 1440,
     "tinggi": 900
    },
@@ -90,20 +90,20 @@
     "tombol_terpotong": false,
     "warna_salah": false,
     "teks_tak_terbaca": false,
-    "skor": 4,
-    "alasan": "Rapi, kontras baik; teks deskripsi agak kecil",
+    "skor": 5,
+    "alasan": "Panel bersih, tombol utuh, kontras teks memadai",
     "lengkap": true,
     "percobaan": 1,
-    "detik": 2.1,
-    "penyedia": "workbuddy-router:workbuddy-17",
-    "akun": "workbuddy-17",
+    "detik": 2.0,
+    "penyedia": "workbuddy-router:workbuddy-10",
+    "akun": "workbuddy-10",
     "http": 200,
     "gambar": 1,
     "jalur": "workbuddy",
     "alat": "MLLM (Router WorkBuddy)"
    },
-   "detik": 4.4,
-   "diperiksa": "2026-11-03T13:54:26+07:00"
+   "detik": 4.11,
+   "diperiksa": "2026-11-03T14:00:35+07:00"
   },
   "pengguna": {
    "lapis": "pengguna",
@@ -183,12 +183,12 @@
      "membingungkan": []
     }
    ],
-   "detik": 97.2,
-   "diperiksa": "2026-11-03T13:56:03+07:00"
+   "detik": 38.03,
+   "diperiksa": "2026-11-03T14:01:13+07:00"
   }
  },
- "detik": 101.83,
- "diperiksa": "2026-11-03T13:56:03+07:00",
+ "detik": 43.0,
+ "diperiksa": "2026-11-03T14:01:13+07:00",
  "target": "C:\\Users\\user\\otonom-penuh\\workspace\\trust-test\\web-csv-insight",
- "url": "http://127.0.0.1:58436/index.html"
+ "url": "http://127.0.0.1:58918/index.html"
 }
