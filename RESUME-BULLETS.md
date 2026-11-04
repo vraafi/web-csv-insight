@@ -1,3 +1,3 @@
-- Membangun CSV Insight dengan 3 lapis QC lulus dalam 43,0 detik.
-- Menutup QC dengan 0 temuan pada berkas app.js berukuran 10030 B.
-- Memproses CSV sepenuhnya di browser tanpa unggah ke server.
+- Membangun CSV Insight dengan 3 lapis QC lulus dalam 40.23 detik.
+- Menutup QC dengan 0 temuan pada lapis kode, pengguna, dan visual.
+- Menyerahkan 4 berkas hasil, termasuk app.js 12697 B dan style.css 4504 B.

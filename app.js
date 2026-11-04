@@ -5,16 +5,17 @@
   var btnSample = document.getElementById('btnSample');
   var btnClear = document.getElementById('btnClear');
   var statusEl = document.getElementById('status');
-  var summarySection = document.getElementById('summarySection');
-  var summaryBody = document.querySelector('#summaryTable tbody');
-  var chartSection = document.getElementById('chartSection');
-  var columnSelect = document.getElementById('columnSelect');
-  var canvas = document.getElementById('chartCanvas');
-  var chartNote = document.getElementById('chartNote');
-  var ctx = canvas.getContext('2d');
+  var summaryEl = document.getElementById('summary');
+  var chartSelect = document.getElementById('chartSelect');
+  var canvas = document.getElementById('chart');
+  var chartInfo = document.getElementById('chartInfo');
 
-  var currentHeaders = [];
-  var currentRows = [];
+  var state = {
+    rows: [],
+    headers: []
+  };
+
+  var SAMPLE_CSV = 'nama,usia,kota,skor\nAndi,25,Jakarta,88\nBudi,32,Bandung,75\nCitra,28,Jakarta,92\nDewi,41,Surabaya,67\nEko,35,Bandung,81\nFajar,29,Jakarta,79\nGita,38,Surabaya,85\nHani,24,Bandung,90\nIndra,45,Jakarta,72\nJoko,33,Surabaya,64\nKarin,27,Bandung,95\nLaras,31,Jakarta,83';
 
   function setStatus(msg) {
     statusEl.textContent = msg;
@@ -26,12 +27,13 @@
     var field = '';
     var inQuotes = false;
     var i = 0;
-    text = text.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-    while (i < text.length) {
+    var len = text.length;
+
+    while (i < len) {
       var ch = text[i];
       if (inQuotes) {
         if (ch === '"') {
-          if (text[i + 1] === '"') {
+          if (i + 1 < len && text[i + 1] === '"') {
             field += '"';
             i += 2;
             continue;
@@ -55,6 +57,10 @@
         i++;
         continue;
       }
+      if (ch === '\r') {
+        i++;
+        continue;
+      }
       if (ch === '\n') {
         row.push(field);
         rows.push(row);
@@ -66,260 +72,330 @@
       field += ch;
       i++;
     }
-    if (field.length > 0 || row.length > 0) {
-      row.push(field);
+    row.push(field);
+    if (row.length > 1 || row[0] !== '') {
       rows.push(row);
-    }
-    while (rows.length && rows[rows.length - 1].length === 1 && rows[rows.length - 1][0].trim() === '') {
-      rows.pop();
     }
     return rows;
   }
 
-  function isNumeric(value) {
-    if (value === null || value === undefined) return false;
-    var v = String(value).trim();
-    if (v === '') return false;
-    return /^-?\d+(\.\d+)?([eE][-+]?\d+)?$/.test(v);
+  function normalize(rows) {
+    if (!rows.length) return { headers: [], data: [] };
+    var headers = rows[0].map(function (h, idx) {
+      var t = String(h).trim();
+      return t === '' ? 'Kolom ' + (idx + 1) : t;
+    });
+    var data = [];
+    for (var r = 1; r < rows.length; r++) {
+      var cells = rows[r];
+      if (cells.length === 1 && cells[0].trim() === '') continue;
+      var obj = {};
+      for (var c = 0; c < headers.length; c++) {
+        obj[headers[c]] = cells[c] !== undefined ? cells[c] : '';
+      }
+      data.push(obj);
+    }
+    return { headers: headers, data: data };
+  }
+
+  function isNumericValue(v) {
+    if (v === null || v === undefined) return false;
+    var s = String(v).trim();
+    if (s === '') return false;
+    return /^-?\d+(\.\d+)?$/.test(s);
+  }
+
+  function computeStats(headers, data) {
+    return headers.map(function (h) {
+      var values = data.map(function (row) { return row[h]; });
+      var nonEmpty = values.filter(function (v) { return String(v).trim() !== ''; });
+      var numeric = nonEmpty.filter(isNumericValue).map(Number);
+      var isNumeric = nonEmpty.length > 0 && numeric.length === nonEmpty.length;
+      var out = {
+        name: h,
+        count: nonEmpty.length,
+        missing: values.length - nonEmpty.length,
+        numeric: isNumeric
+      };
+      if (isNumeric) {
+        numeric.sort(function (a, b) { return a - b; });
+        var sum = numeric.reduce(function (a, b) { return a + b; }, 0);
+        var mean = sum / numeric.length;
+        var n = numeric.length;
+        var median = n % 2 === 1 ? numeric[(n - 1) / 2] : (numeric[n / 2 - 1] + numeric[n / 2]) / 2;
+        var min = numeric[0];
+        var max = numeric[n - 1];
+        out.mean = mean;
+        out.median = median;
+        out.min = min;
+        out.max = max;
+        out.sorted = numeric;
+      } else {
+        var freq = {};
+        nonEmpty.forEach(function (v) {
+          var key = String(v);
+          freq[key] = (freq[key] || 0) + 1;
+        });
+        var uniq = Object.keys(freq).length;
+        out.unique = uniq;
+        out.freq = freq;
+        var top = Object.keys(freq).sort(function (a, b) { return freq[b] - freq[a]; });
+        out.top = top.slice(0, 8).map(function (k) { return { label: k, count: freq[k] }; });
+      }
+      return out;
+    });
   }
 
   function fmtNum(n) {
     if (!isFinite(n)) return '-';
-    if (Math.abs(n) >= 1000) return n.toFixed(2);
-    return String(Math.round(n * 100) / 100);
+    if (Math.abs(n) >= 1000 || n % 1 !== 0) {
+      return n.toLocaleString('id-ID', { maximumFractionDigits: 2 });
+    }
+    return String(n);
   }
 
-  function analyze() {
-    if (currentHeaders.length === 0) {
-      summarySection.hidden = true;
-      chartSection.hidden = true;
+  function renderSummary(stats) {
+    summaryEl.innerHTML = '';
+    if (!stats.length) {
+      summaryEl.textContent = 'Belum ada data.';
       return;
     }
-    summaryBody.innerHTML = '';
-    var colStats = currentHeaders.map(function (h) {
-      return { name: h, values: [], numericCount: 0, empty: 0 };
-    });
-    currentRows.forEach(function (r) {
-      for (var c = 0; c < currentHeaders.length; c++) {
-        var raw = r[c] === undefined ? '' : r[c];
-        var st = colStats[c];
-        if (raw.trim() === '') {
-          st.empty++;
-        } else {
-          st.values.push(raw);
-          if (isNumeric(raw)) st.numericCount++;
-        }
+    var grid = document.createElement('div');
+    grid.className = 'summary-grid';
+    stats.forEach(function (s) {
+      var card = document.createElement('div');
+      card.className = 'stat-card';
+      var title = document.createElement('h3');
+      title.textContent = s.name;
+      card.appendChild(title);
+      var type = document.createElement('div');
+      type.className = 'stat-type';
+      type.textContent = s.numeric ? 'Tipe: angka' : 'Tipe: teks';
+      card.appendChild(type);
+      var list = document.createElement('ul');
+      list.className = 'stat-list';
+      var items = [];
+      items.push(['Terisi', String(s.count)]);
+      items.push(['Kosong', String(s.missing)]);
+      if (s.numeric) {
+        items.push(['Rata-rata', fmtNum(s.mean)]);
+        items.push(['Median', fmtNum(s.median)]);
+        items.push(['Min', fmtNum(s.min)]);
+        items.push(['Maks', fmtNum(s.max)]);
+      } else {
+        items.push(['Unik', String(s.unique)]);
+        items.push(['Terbanyak', s.top && s.top.length ? s.top[0].label + ' (' + s.top[0].count + ')' : '-']);
       }
-    });
-
-    columnSelect.innerHTML = '';
-    colStats.forEach(function (st, idx) {
-      var type = 'teks';
-      var minVal = '-', maxVal = '-', avgVal = '-';
-      if (st.values.length > 0 && st.numericCount === st.values.length) {
-        type = 'angka';
-        var nums = st.values.map(Number);
-        var min = Math.min.apply(null, nums);
-        var max = Math.max.apply(null, nums);
-        var sum = nums.reduce(function (a, b) { return a + b; }, 0);
-        minVal = fmtNum(min);
-        maxVal = fmtNum(max);
-        avgVal = fmtNum(sum / nums.length);
-      }
-      var uniq = {};
-      st.values.forEach(function (v) { uniq[v] = true; });
-      var uniqueCount = Object.keys(uniq).length;
-
-      var tr = document.createElement('tr');
-      var cells = [st.name, type, String(st.values.length), String(uniqueCount), String(st.empty), minVal, maxVal, avgVal];
-      cells.forEach(function (c) {
-        var td = document.createElement('td');
-        td.textContent = c;
-        tr.appendChild(td);
+      items.forEach(function (pair) {
+        var li = document.createElement('li');
+        var k = document.createElement('span');
+        k.className = 'stat-key';
+        k.textContent = pair[0];
+        var v = document.createElement('span');
+        v.className = 'stat-val';
+        v.textContent = pair[1];
+        li.appendChild(k);
+        li.appendChild(v);
+        list.appendChild(li);
       });
-      summaryBody.appendChild(tr);
+      card.appendChild(list);
+      grid.appendChild(card);
+    });
+    summaryEl.appendChild(grid);
+  }
 
+  function populateSelect(stats) {
+    chartSelect.innerHTML = '';
+    if (!stats.length) return;
+    stats.forEach(function (s, idx) {
       var opt = document.createElement('option');
       opt.value = String(idx);
-      opt.textContent = st.name;
-      columnSelect.appendChild(opt);
+      opt.textContent = s.name + (s.numeric ? ' (angka)' : ' (teks)');
+      chartSelect.appendChild(opt);
     });
-
-    summarySection.hidden = false;
-    chartSection.hidden = false;
-    if (columnSelect.options.length > 0) {
-      columnSelect.selectedIndex = 0;
-      drawChart(0);
-    } else {
-      clearCanvas();
-      chartNote.textContent = 'Tidak ada kolom untuk digrafikkan.';
-    }
+    chartSelect.value = '0';
+    drawChart(stats, 0);
   }
 
-  function clearCanvas() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#0b1220';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-  }
-
-  function drawChart(colIndex) {
-    clearCanvas();
-    chartNote.textContent = '';
-    var name = currentHeaders[colIndex];
-    var counts = {};
-    var numeric = [];
-    var useNumeric = true;
-    var seen = 0;
-    currentRows.forEach(function (r) {
-      var raw = r[colIndex] === undefined ? '' : r[colIndex];
-      if (raw.trim() === '') return;
-      seen++;
-      if (isNumeric(raw)) {
-        numeric.push(Number(raw));
-      } else {
-        useNumeric = false;
+  function prepareChartData(s) {
+    if (s.numeric) {
+      var sorted = s.sorted;
+      if (!sorted || !sorted.length) return { labels: [], values: [] };
+      var binCount = Math.min(8, Math.max(3, Math.ceil(Math.sqrt(sorted.length))));
+      var min = sorted[0];
+      var max = sorted[sorted.length - 1];
+      if (min === max) {
+        return { labels: [fmtNum(min)], values: [sorted.length] };
       }
-      counts[raw] = (counts[raw] || 0) + 1;
-    });
-
-    var bars = [];
-    if (seen === 0) {
-      chartNote.textContent = 'Kolom "' + name + '" tidak memiliki data untuk digrafikkan.';
-      return;
-    }
-
-    if (useNumeric && numeric.length === seen) {
-      var min = Math.min.apply(null, numeric);
-      var max = Math.max.apply(null, numeric);
-      var bins = 8;
-      var range = max - min;
-      var binWidth = range === 0 ? 1 : range / bins;
-      var binCounts = new Array(bins).fill(0);
-      numeric.forEach(function (v) {
-        var b = range === 0 ? 0 : Math.min(bins - 1, Math.floor((v - min) / binWidth));
-        binCounts[b]++;
+      var width = (max - min) / binCount;
+      var bins = new Array(binCount).fill(0);
+      sorted.forEach(function (v) {
+        var bi = Math.floor((v - min) / width);
+        if (bi >= binCount) bi = binCount - 1;
+        if (bi < 0) bi = 0;
+        bins[bi]++;
       });
-      binCounts.forEach(function (cnt, i) {
-        var lo = min + i * binWidth;
-        var hi = lo + binWidth;
-        bars.push({ label: fmtNum(lo) + '–' + fmtNum(hi), value: cnt });
-      });
-      chartNote.textContent = 'Distribusi numerik kolom "' + name + '" (' + seen + ' nilai).';
-    } else {
-      var entries = Object.keys(counts).map(function (k) { return { label: k, value: counts[k] }; });
-      entries.sort(function (a, b) { return b.value - a.value; });
-      bars = entries.slice(0, 12);
-      chartNote.textContent = 'Frekuensi nilai kategori kolom "' + name + '" (menampilkan maks 12 kategori teratas dari ' + entries.length + ').';
+      var labels = [];
+      for (var i = 0; i < binCount; i++) {
+        var lo = min + i * width;
+        var hi = lo + width;
+        labels.push(fmtNum(lo) + ' - ' + fmtNum(hi));
+      }
+      return { labels: labels, values: bins };
     }
-
-    renderBars(bars);
+    var top = s.top || [];
+    return {
+      labels: top.map(function (t) { return t.label; }),
+      values: top.map(function (t) { return t.count; })
+    };
   }
 
-  function renderBars(bars) {
+  function drawChart(stats, idx) {
+    var ctx = canvas.getContext('2d');
     var W = canvas.width;
     var H = canvas.height;
-    var pad = 50;
-    var chartW = W - pad * 2;
-    var chartH = H - pad * 2;
-    var n = bars.length;
-
+    ctx.clearRect(0, 0, W, H);
     ctx.fillStyle = '#0b1220';
     ctx.fillRect(0, 0, W, H);
 
-    var maxVal = 0;
-    bars.forEach(function (b) { if (b.value > maxVal) maxVal = b.value; });
-    if (maxVal === 0) maxVal = 1;
+    if (!stats.length || !stats[idx]) {
+      chartInfo.textContent = '';
+      return;
+    }
+    var s = stats[idx];
+    var data = prepareChartData(s);
+    if (!data.values.length) {
+      chartInfo.textContent = 'Tidak ada data untuk digrafikkan.';
+      return;
+    }
+    chartInfo.textContent = s.numeric
+      ? 'Distribusi nilai (histogram) untuk kolom "' + s.name + '".'
+      : 'Frekuensi nilai teratas untuk kolom "' + s.name + '".';
+
+    var padLeft = 56;
+    var padRight = 20;
+    var padTop = 24;
+    var padBottom = 72;
+    var plotW = W - padLeft - padRight;
+    var plotH = H - padTop - padBottom;
+    var maxVal = Math.max.apply(null, data.values);
+    if (maxVal <= 0) maxVal = 1;
 
     ctx.strokeStyle = '#334155';
     ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(pad, pad);
-    ctx.lineTo(pad, pad + chartH);
-    ctx.lineTo(pad + chartW, pad + chartH);
+    ctx.moveTo(padLeft, padTop);
+    ctx.lineTo(padLeft, padTop + plotH);
+    ctx.lineTo(padLeft + plotW, padTop + plotH);
     ctx.stroke();
 
-    var slot = chartW / n;
-    var barW = Math.min(60, slot * 0.65);
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    var ticks = 4;
+    for (var t = 0; t <= ticks; t++) {
+      var y = padTop + plotH - (plotH * t / ticks);
+      var val = maxVal * t / ticks;
+      ctx.fillText(fmtNum(Math.round(val)), padLeft - 8, y);
+      ctx.strokeStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.moveTo(padLeft, y);
+      ctx.lineTo(padLeft + plotW, y);
+      ctx.stroke();
+    }
 
-    bars.forEach(function (b, i) {
-      var x = pad + i * slot + (slot - barW) / 2;
-      var h = (b.value / maxVal) * chartH;
-      var y = pad + chartH - h;
+    var n = data.values.length;
+    var gap = 10;
+    var barW = Math.max(6, (plotW - gap * (n + 1)) / n);
+    for (var i = 0; i < n; i++) {
+      var bh = (data.values[i] / maxVal) * plotH;
+      var x = padLeft + gap + i * (barW + gap);
+      var yTop = padTop + plotH - bh;
       ctx.fillStyle = '#1d4ed8';
-      ctx.fillRect(x, y, barW, h);
+      ctx.fillRect(x, yTop, barW, bh);
+
       ctx.fillStyle = '#e2e8f0';
-      ctx.font = '12px sans-serif';
+      ctx.font = '11px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(String(b.value), x + barW / 2, y - 6);
-      var label = b.label;
-      if (label.length > 12) label = label.slice(0, 11) + '…';
-      ctx.fillStyle = '#94a3b8';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(String(data.values[i]), x + barW / 2, yTop - 2);
+
       ctx.save();
-      ctx.translate(x + barW / 2, pad + chartH + 16);
+      ctx.translate(x + barW / 2, padTop + plotH + 8);
       ctx.rotate(-Math.PI / 6);
       ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = '#94a3b8';
+      var label = data.labels[i];
+      if (label.length > 14) label = label.slice(0, 13) + '…';
       ctx.fillText(label, 0, 0);
       ctx.restore();
-    });
+    }
   }
 
-  function loadCSVText(text) {
-    var rows = parseCSV(text);
-    if (rows.length === 0) {
-      setStatus('File CSV kosong atau tidak valid.');
-      return;
+  function loadText(text, sourceLabel) {
+    try {
+      var rows = parseCSV(text);
+      var norm = normalize(rows);
+      if (!norm.headers.length) {
+        setStatus('Berkas kosong atau tidak valid.');
+        return;
+      }
+      state.headers = norm.headers;
+      state.rows = norm.data;
+      var stats = computeStats(norm.headers, norm.data);
+      renderSummary(stats);
+      populateSelect(stats);
+      setStatus('Dimuat: ' + sourceLabel + ' — ' + norm.data.length + ' baris, ' + norm.headers.length + ' kolom.');
+    } catch (err) {
+      setStatus('Gagal membaca CSV: ' + err.message);
     }
-    currentHeaders = rows[0].map(function (h, i) { return h.trim() === '' ? 'Kolom ' + (i + 1) : h.trim(); });
-    currentRows = rows.slice(1);
-    if (currentRows.length === 0) {
-      setStatus('CSV hanya berisi header, tidak ada data.');
-      summarySection.hidden = true;
-      chartSection.hidden = true;
-      return;
-    }
-    setStatus('Dimuat: ' + currentHeaders.length + ' kolom, ' + currentRows.length + ' baris data.');
-    analyze();
-  }
-
-  function readFile(file) {
-    var reader = new FileReader();
-    reader.onload = function (e) {
-      loadCSVText(String(e.target.result));
-    };
-    reader.onerror = function () {
-      setStatus('Gagal membaca file.');
-    };
-    reader.readAsText(file);
   }
 
   fileInput.addEventListener('change', function () {
-    if (fileInput.files && fileInput.files.length > 0) {
-      readFile(fileInput.files[0]);
-    }
+    var f = fileInput.files && fileInput.files[0];
+    if (!f) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      loadText(String(reader.result), f.name);
+    };
+    reader.onerror = function () {
+      setStatus('Gagal membaca berkas.');
+    };
+    reader.readAsText(f);
   });
 
   btnSample.addEventListener('click', function () {
-    var sample = 'nama,usia,kota,skor\nAni,23,Bandung,88\nBudi,31,Jakarta,75\nCitra,27,Bandung,92\nDewi,35,Surabaya,65\nEko,42,Jakarta,80\nFajar,29,Bandung,70\nGita,24,Surabaya,95\nHani,38,Jakarta,85\n';
-    loadCSVText(sample);
+    loadText(SAMPLE_CSV, 'contoh bawaan');
   });
 
   btnClear.addEventListener('click', function () {
-    currentHeaders = [];
-    currentRows = [];
+    state.headers = [];
+    state.rows = [];
     fileInput.value = '';
-    summaryBody.innerHTML = '';
-    columnSelect.innerHTML = '';
-    summarySection.hidden = true;
-    chartSection.hidden = true;
-    chartNote.textContent = '';
-    clearCanvas();
-    setStatus('Data dihapus. Belum ada file dimuat.');
+    summaryEl.textContent = 'Belum ada data.';
+    chartSelect.innerHTML = '';
+    chartInfo.textContent = '';
+    var ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#0b1220';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    setStatus('Data telah dihapus.');
   });
 
-  columnSelect.addEventListener('change', function () {
-    var idx = parseInt(columnSelect.value, 10);
-    if (!isNaN(idx)) drawChart(idx);
+  chartSelect.addEventListener('change', function () {
+    var idx = parseInt(chartSelect.value, 10);
+    if (isNaN(idx)) return;
+    var stats = computeStats(state.headers, state.rows);
+    drawChart(stats, idx);
   });
 
-  clearCanvas();
+  window.addEventListener('resize', function () {
+    if (!state.headers.length) return;
+    var idx = parseInt(chartSelect.value, 10);
+    if (isNaN(idx)) idx = 0;
+    var stats = computeStats(state.headers, state.rows);
+    drawChart(stats, idx);
+  });
 })();

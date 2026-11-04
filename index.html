@@ -10,33 +10,35 @@
 <body>
 <main>
 <h1>CSV Insight</h1>
-<p class="sub">Unggah file CSV Anda. Semua data diproses di browser, tidak ada unggahan ke server.</p>
-<div class="controls">
-<label class="file-label" for="fileInput">Pilih file CSV</label>
-<input type="file" id="fileInput" accept=".csv,text/csv" class="visually-hidden">
-<button type="button" id="btnSample">Muat contoh</button>
-<button type="button" id="btnClear">Hapus data</button>
-</div>
-<p id="status" class="status" role="status" aria-live="polite">Belum ada file dimuat.</p>
-<section id="summarySection" class="section" hidden>
-<h2>Ringkasan Kolom</h2>
-<div class="table-wrap">
-<table id="summaryTable">
-<thead><tr><th>Kolom</th><th>Tipe</th><th>Jumlah</th><th>Unik</th><th>Kosong</th><th>Min</th><th>Maks</th><th>Rata-rata</th></tr></thead>
-<tbody></tbody>
-</table>
-</div>
+<p class="subtitle">Unggah berkas CSV untuk melihat ringkasan statistik per kolom dan grafik batang. Semua diproses di browser Anda, tanpa unggah ke server.</p>
+
+<section class="panel" aria-label="Kontrol unggah">
+  <div class="controls">
+    <label class="file-label">
+      <span>Pilih berkas CSV</span>
+      <input type="file" id="fileInput" accept=".csv,text/csv" aria-label="Pilih berkas CSV">
+    </label>
+    <button type="button" id="btnSample" class="btn btn-secondary">Muat Contoh</button>
+    <button type="button" id="btnClear" class="btn btn-secondary">Hapus Data</button>
+  </div>
+  <div id="status" class="status" role="status" aria-live="polite">Belum ada berkas dimuat.</div>
 </section>
-<section id="chartSection" class="section" hidden>
-<h2>Grafik Batang</h2>
-<div class="chart-controls">
-<label for="columnSelect">Pilih kolom untuk grafik:</label>
-<select id="columnSelect"></select>
-</div>
-<div class="canvas-wrap">
-<canvas id="chartCanvas" width="800" height="400" role="img" aria-label="Grafik batang nilai kolom terpilih"></canvas>
-</div>
-<p id="chartNote" class="status"></p>
+
+<section class="panel" aria-label="Ringkasan statistik">
+  <h2>Ringkasan Statistik</h2>
+  <div id="summary" class="summary">Belum ada data.</div>
+</section>
+
+<section class="panel" aria-label="Grafik batang">
+  <h2>Grafik Batang</h2>
+  <div class="chart-controls">
+    <label for="chartSelect" class="select-label">Kolom untuk grafik:</label>
+    <select id="chartSelect" aria-label="Pilih kolom untuk grafik"></select>
+  </div>
+  <div class="canvas-wrap">
+    <canvas id="chart" width="800" height="400" role="img" aria-label="Grafik batang distribusi kolom"></canvas>
+  </div>
+  <p id="chartInfo" class="chart-info"></p>
 </section>
 </main>
 </body>

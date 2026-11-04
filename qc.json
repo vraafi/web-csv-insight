@@ -26,13 +26,13 @@
    "jumlah_berkas": {
     "py": 0,
     "js": 1,
-    "json": 0,
+    "json": 1,
     "lua": 0,
-    "lain": 2
+    "lain": 6
    },
-   "jumlah_diperiksa": 3,
-   "detik": 0.85,
-   "diperiksa": "2026-11-03T14:00:31+07:00"
+   "jumlah_diperiksa": 8,
+   "detik": 0.42,
+   "diperiksa": "2026-11-04T21:23:53+07:00"
   },
   "visual": {
    "lapis": "visual",
@@ -43,32 +43,44 @@
    "bounce_ke": null,
    "temuan": [],
    "catatan": [],
-   "url": "http://127.0.0.1:58918/index.html",
-   "saran_mutu": [],
-   "screenshot": "C:\\Users\\user\\otonom-penuh\\state\\os\\qc_hardcore\\visual\\visual-1793689233.png",
+   "url": "http://127.0.0.1:56136/index.html",
+   "saran_mutu": [
+    "MLLM menandai warna_salah, teks_tak_terbaca tetapi pengukuran membantahnya (kontras min 6.76:1 ≥ 4.5, font min 15.2 px ≥ 11, tombol keluar viewport False) — pendapat VLM tidak dipakai memblokir"
+   ],
+   "llm_dibatalkan": [
+    {
+     "klaim": "warna_salah",
+     "bukti": "kontras min 6.76:1 ≥ 4.5; font min 15.2 px ≥ 11; tombol keluar viewport: False"
+    },
+    {
+     "klaim": "teks_tak_terbaca",
+     "bukti": "kontras min 6.76:1 ≥ 4.5; font min 15.2 px ≥ 11; tombol keluar viewport: False"
+    }
+   ],
+   "screenshot": "C:\\Users\\user\\otonom-penuh\\state\\os\\qc_hardcore\\visual\\visual-1793802235.png",
    "dom": {
     "inti": [
      {
       "kunci": "el0",
-      "label": "Muat contoh",
-      "x": 333,
-      "y": 133,
+      "label": "Muat Contoh",
+      "x": 527,
+      "y": 187,
       "w": 138,
-      "h": 49,
+      "h": 48,
       "terlihat": true,
       "di_viewport": true,
       "horizontal_ok": true,
       "di_lipatan": true,
-      "kontras": 6.7,
+      "kontras": 9.9,
       "ukuran_font": 16
      },
      {
       "kunci": "el1",
-      "label": "Hapus data",
-      "x": 483,
-      "y": 133,
-      "w": 127,
-      "h": 49,
+      "label": "Hapus Data",
+      "x": 677,
+      "y": 187,
+      "w": 126,
+      "h": 48,
       "terlihat": true,
       "di_viewport": true,
       "horizontal_ok": true,
@@ -78,9 +90,9 @@
      }
     ],
     "interaktif": 4,
-    "teks_diukur": 15,
-    "kontras_min": 6.7,
-    "font_min": 14.72,
+    "teks_diukur": 7,
+    "kontras_min": 6.76,
+    "font_min": 15.2,
     "lebar": 1440,
     "tinggi": 900
    },
@@ -88,22 +100,26 @@
     "ok": true,
     "sah": true,
     "tombol_terpotong": false,
-    "warna_salah": false,
-    "teks_tak_terbaca": false,
-    "skor": 5,
-    "alasan": "Panel bersih, tombol utuh, kontras teks memadai",
+    "warna_salah": true,
+    "teks_tak_terbaca": true,
+    "skor": 3,
+    "alasan": "Teks tidak terbaca (tema gelap)",
     "lengkap": true,
     "percobaan": 1,
-    "detik": 2.0,
-    "penyedia": "workbuddy-router:workbuddy-10",
-    "akun": "workbuddy-10",
+    "detik": 2.2,
+    "penyedia": "workbuddy-router:workbuddy-17",
+    "akun": "workbuddy-17",
     "http": 200,
     "gambar": 1,
     "jalur": "workbuddy",
-    "alat": "MLLM (Router WorkBuddy)"
+    "alat": "MLLM (Router WorkBuddy)",
+    "dibantah_oleh_pengukuran": [
+     "warna_salah",
+     "teks_tak_terbaca"
+    ]
    },
-   "detik": 4.11,
-   "diperiksa": "2026-11-03T14:00:35+07:00"
+   "detik": 4.7,
+   "diperiksa": "2026-11-04T21:23:58+07:00"
   },
   "pengguna": {
    "lapis": "pengguna",
@@ -183,12 +199,19 @@
      "membingungkan": []
     }
    ],
-   "detik": 38.03,
-   "diperiksa": "2026-11-03T14:01:13+07:00"
+   "detik": 35.11,
+   "diperiksa": "2026-11-04T21:24:33+07:00"
   }
  },
- "detik": 43.0,
- "diperiksa": "2026-11-03T14:01:13+07:00",
+ "override_deterministik": {
+  "diterapkan": false,
+  "hijau": true,
+  "dibatalkan": [],
+  "bertahan": [],
+  "catatan": ""
+ },
+ "detik": 40.23,
+ "diperiksa": "2026-11-04T21:24:33+07:00",
  "target": "C:\\Users\\user\\otonom-penuh\\workspace\\trust-test\\web-csv-insight",
- "url": "http://127.0.0.1:58918/index.html"
+ "url": "http://127.0.0.1:56136/index.html"
 }

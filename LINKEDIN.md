@@ -1,11 +1,7 @@
-3 lapis QC lulus dalam 43,0 detik. Temuan: 0. Itu angka untuk CSV Insight, alat web yang membaca CSV langsung di browser.
+CSV Insight lulus 3 lapis QC dalam 40.23 detik. Temuan: 0. Lapis kode, pengguna, dan visual semuanya lulus.
 
-Kami membangunnya dengan satu aturan: data tidak keluar dari perangkat pengguna. Unggah CSV, lihat ringkasan statistik per kolom, baca grafik batang di canvas. Tanpa server. Berkas hasil: app.js 10030 B, index.html 1550 B, style.css 3337 B.
+Kami membangun alat web yang mengunggah CSV di browser, menampilkan ringkasan statistik per kolom, dan menggambar grafik batang di canvas. Data tidak dikirim ke server. Pemrosesan berjalan lokal di perangkat pengguna.
 
-Keputusan teknisnya sederhana dan tegas. Semua pemrosesan di sisi klien. Grafik digambar di canvas. Logika dan tampilan dipisah rapi. QC mencakup kode, pengguna, dan visual, dan ketiganya lulus.
+Hasil diserahkan dalam 4 berkas: app.js 12697 B, index.html 1691 B, README.md 833 B, style.css 4504 B. Rincian kode: 1 JS, 1 JSON, 6 lain, 0 Python, 0 Lua.
 
-Kami tidak mengklaim lebih dari yang terukur. Belum ada uji beban untuk CSV raksasa. Cakupan QC tiga lapis. Itu batas yang kami akui terbuka.
-
-Uji CSV Insight dengan berkas Anda sendiri, lalu kirim catatan batas ukuran yang Anda temui.
-
-#CSV #DataTools #QC
+Kami tidak menambah klaim di luar angka QC. Silakan tinjau berkas hasil dan jalankan QC yang sama sebelum memakai alat ini di lingkungan Anda. #CSV #QualityControl #DataPrivacy
